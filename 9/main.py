@@ -34,39 +34,43 @@ class IntCode:
             print("Huge problem here")
             return 0
 
+    def get_address(self,val,mode):
+        if mode == 0:
+            return val
+        elif mode == 2:
+            return val + self.rel_base
+        else:
+            print("Addressing Error")
+
     def exec(self):
 
         while 1:
             op,modes = self.decode_opcode(self.prog[self.prog_ptr])
 
             if op == 99:
-                return self.output
+                return None
             elif op == 1:
                 operand1 = self.get_operand(self.prog[self.prog_ptr+1], modes[0])
                 operand2 = self.get_operand(self.prog[self.prog_ptr+2], modes[1])
-                rel = 0
-                if modes[2] == 2:
-                    rel = self.rel_base
-                self.prog[self.prog[self.prog_ptr+3] + rel] = operand1 + operand2
+                self.prog[self.get_address(self.prog[self.prog_ptr+3],modes[2])] = operand1 + operand2
                 self.prog_ptr += 4
             elif op == 2:
                 operand1 = self.get_operand(self.prog[self.prog_ptr+1],modes[0])
                 operand2 = self.get_operand(self.prog[self.prog_ptr+2],modes[1])
-                rel = 0
-                if modes[2] == 2:
-                    rel = self.rel_base
-                self.prog[self.prog[self.prog_ptr+3]+rel] = operand1*operand2
+                self.prog[self.get_address(self.prog[self.prog_ptr+3],modes[2])] = operand1*operand2
                 self.prog_ptr += 4
             elif op == 3:
-                operand1 = self.get_operand(self.prog[self.prog_ptr+1],modes[0])
-                if modes[0] == 2:
-                    operand1 = self.rel_base + self.prog[self.prog_ptr+1]
-                self.prog[operand1] = self.get_input()
+                self.prog[self.get_address(self.prog[self.prog_ptr+3],modes[2])] = self.get_input()
                 self.prog_ptr += 2
             elif op == 4:
                 operand1 = self.get_operand(self.prog[self.prog_ptr+1], modes[0])
                 self.output += [operand1]
                 self.prog_ptr += 2
+                if self.output.__len__() == 2:
+                    r = self.output[-2:]
+                    self.output = []
+                    return r
+                # return (self.output[-2:])
             elif op == 5:
                 operand1 = self.get_operand(self.prog[self.prog_ptr+1], modes[0])
                 operand2 = self.get_operand(self.prog[self.prog_ptr+2], modes[1])
@@ -84,29 +88,26 @@ class IntCode:
             elif op == 7:
                 operand1 = self.get_operand(self.prog[self.prog_ptr+1], modes[0])
                 operand2 = self.get_operand(self.prog[self.prog_ptr+2], modes[1])
-                rel = 0
-                if modes[2] == 2:
-                    rel = self.rel_base
                 if operand1 < operand2:
-                    self.prog[self.prog[self.prog_ptr+3]+rel] = 1
+                    self.prog[self.get_address(self.prog[self.prog_ptr+3],modes[2])] = 1
                 else:
-                    self.prog[self.prog[self.prog_ptr+3]+rel] = 0
+                    self.prog[self.get_address(self.prog[self.prog_ptr+3],modes[2])] = 0
                 self.prog_ptr += 4
             elif op == 8:
                 operand1 = self.get_operand(self.prog[self.prog_ptr+1], modes[0])
                 operand2 = self.get_operand(self.prog[self.prog_ptr+2], modes[1])
-                rel = 0
-                if modes[2] == 2:
-                    rel = self.rel_base
                 if operand1 == operand2:
-                    self.prog[self.prog[self.prog_ptr+3]+rel] = 1
+                    self.prog[self.get_address(self.prog[self.prog_ptr+3],modes[2])] = 1
                 else:
-                    self.prog[self.prog[self.prog_ptr+3]+rel] = 0
+                    self.prog[self.get_address(self.prog[self.prog_ptr+3],modes[2])] = 0
                 self.prog_ptr += 4
             elif op == 9:
                 operand1 = self.get_operand(self.prog[self.prog_ptr+1], modes[0])
                 self.rel_base += operand1
                 self.prog_ptr += 2
+            else:
+                print("Op Code Error: OpCode = " + str(op) + ", ProgPtr = " + str(self.prog_ptr))
+                return None
 
 f = open("input.txt")
 dat = [int(i) for i in f.read().strip().split(",")]
@@ -114,7 +115,9 @@ dat = [int(i) for i in f.read().strip().split(",")]
 print(dat)
 import copy
 ic = IntCode(copy.deepcopy(dat),[1])
-print("1: " + str(ic.exec()[0]))
+ic.exec()
+print("1: " + str(ic.output[0]))
 
 ic2 = IntCode(copy.deepcopy(dat),[2])
-print("2: " + str(ic2.exec()[0]))
+ic2.exec()
+print("2: " + str(ic2.output[0]))

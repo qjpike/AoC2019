@@ -17,20 +17,27 @@ for asteroid in asteroids:
         if target != asteroid:
             if target[0] == asteroid[0]:
                 if target[1] < asteroid[1]:
-                    v = ('a_up',10000000)
+                    v = ('a',10000000)
                 else:
-                    v = ('e_down',-10000000)
+                    v = ('e',-10000000)
             elif target[1] == asteroid[1]:
                 if target[0] < asteroid[0]:
-                    v = ('g_left', 0)
+                    v = ('g', 0)
                 else:
-                    v = ('c_right', 0)
+                    v = ('c', 0)
             else:
                 m = (asteroid[1] - target[1]) / (asteroid[0] - target[0])
                 if asteroid[1] < target[1]:
-                    v = ("h1",m)
+                    if m > 0:
+                        v = ("f",m)
+                    else:
+                        v = ("d",m)
                 else:
-                    v = ("h2",m)
+                    if m > 0:
+                        v = ("b",m)
+                    else:
+                        v = ("h",m)
+
             if v in slopes:
                 slopes[v] += [target]
             else:
@@ -41,7 +48,7 @@ for asteroid in asteroids:
         pick_slopes = slopes
         max = slopes.__len__()
 
-print("1: " + str(max) + " " + str(pick))
+print("1: " + str(max))
 
 # sort each slope's asteroids by manhattan distance
 for j in list(pick_slopes.keys()):
@@ -54,10 +61,52 @@ for j in list(pick_slopes.keys()):
 # sort the slopes in clockwise order
 slope_order = []
 slopes_raw = list(pick_slopes.keys())
-print(slopes_raw.sort())
+
+slopes_sorted = []
+a = []
+b = []
+c = []
+d = []
+e = []
+f = []
+g = []
+h = []
+for i in slopes_raw:
+    if i[0] == 'a':
+        a.append(i)
+    elif i[0] == 'b':
+        b.append(i)
+    elif i[0] == 'c':
+        c.append(i)
+    elif i[0] == 'd':
+        d.append(i)
+    elif i[0] == 'e':
+        e.append(i)
+    elif i[0] == 'f':
+        f.append(i)
+    elif i[0] == 'g':
+        g.append(i)
+    elif i[0] == 'h':
+        h.append(i)
+
+b.sort()
+d.sort()
+f.sort()
+h.sort()
+
+slopes_sorted = a+h+c+f+e+d+g+b
+
 
 # put the asteroids in order of destruction
+destroy_order = []
+while destroy_order.__len__() < 250:
+    for i in slopes_sorted:
+        if pick_slopes[i].__len__() > 0:
+            destroy_order.append(pick_slopes[i].pop(0))
+        else:
+            slopes_sorted.remove(i)
+
 
 # find the asteroid at position 200
-
+print("2: " + str(destroy_order[199][1]*100+destroy_order[199][2]))
 
