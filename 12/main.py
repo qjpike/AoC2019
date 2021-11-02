@@ -1,6 +1,5 @@
 import copy
 
-
 class Moon:
     def __init__(self, pos):
         self.x = pos[0]
@@ -52,13 +51,6 @@ f = open("input.txt")
 dat = [i.strip() for i in f.readlines()]
 
 def partOne():
-    prev_pos = dict()
-    prev_pos["x"] = []
-    prev_pos["y"] = []
-    prev_pos["z"] = []
-
-    found = [False, False, False]
-
     moons = []
     for i in dat:
         s = i.split("=")
@@ -67,57 +59,14 @@ def partOne():
         z = int(s[3][:s[3].index(">")])
         moons.append(Moon((x,y,z)))
 
-    x_pos = []
-    y_pos = []
-    z_pos = []
-    for i in moons:
-        x_pos.append((i.x, i.vx))
-        y_pos.append((i.y, i.vy))
-        z_pos.append((i.z, i.vz))
-
-    prev_pos["x"].append(x_pos)
-    prev_pos["y"].append(y_pos)
-    prev_pos["z"].append(z_pos)
-
-    for k in range(10000000):
+    for k in range(1000):
         for i in moons:
             for j in moons:
                 if i != j:
                     i.apply_vel(j)
 
-        x_pos = []
-        y_pos = []
-        z_pos = []
         for i in moons:
             i.move()
-            x_pos.append((i.x, i.vx))
-            y_pos.append((i.y, i.vy))
-            z_pos.append((i.z, i.vz))
-
-        if x_pos not in prev_pos["x"]:
-            prev_pos["x"].append(x_pos)
-        elif not found[0]:
-            print("X: " + str(k+1))
-            found[0] = True
-
-        if y_pos not in prev_pos["y"] :
-            prev_pos["y"].append(y_pos)
-        elif not found[1]:
-            print("Y: " + str(k + 1))
-            found[1] = True
-
-        if z_pos not in prev_pos["z"]:
-            prev_pos["x"].append(x_pos)
-        elif not found[2]:
-            print("Z: " + str(k + 1))
-            found[2] = True
-
-        f = False
-        for i in found:
-            f = f and i
-
-        if f:
-            break
 
     total_e = 0
     for i in moons:
@@ -128,10 +77,51 @@ def partOne():
 
 print("1: " + str(partOne()))
 
-def calc_axis(arr):
-    vel = [0,0,0,0]
+def calc_axis(locs):
+    vels = [0,0,0,0]
 
-    prev_arr = copy.deepcopy(arr)
-    for i in arr:
-        for j in arr[]:
-            if
+    prev = []
+
+    orgLocs = copy.deepcopy(locs)
+
+    i = 0
+    while True:
+
+
+        for j in range(len(locs)):
+            for k in range(len(locs)-1):
+                if locs[j] < locs[(j+k+1) % len(locs)]:
+                    vels[j] += 1
+                elif locs[j] > locs[(j+k+1) % len(locs)]:
+                    vels[j] -= 1
+
+        for j in range(len(locs)):
+            locs[j] += vels[j]
+
+        i += 1
+        if locs == orgLocs:
+            i += 1
+            break
+
+    return i
+
+
+xs = []
+ys = []
+zs = []
+for i in dat:
+    s = i.split("=")
+    xs.append(int(s[1][:s[1].index(",")]))
+    ys.append(int(s[2][:s[2].index(",")]))
+    zs.append(int(s[3][:s[3].index(">")]))
+
+x_rep = calc_axis(xs)
+y_rep = calc_axis(ys)
+z_rep = calc_axis(zs)
+
+import math
+lcmxy = x_rep*y_rep//math.gcd(x_rep,y_rep)
+lcm = lcmxy*z_rep//math.gcd(lcmxy,z_rep)
+
+print(x_rep,y_rep,z_rep)
+print(lcm)
